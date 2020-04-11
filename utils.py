@@ -41,14 +41,14 @@ class Utils:
 
     @staticmethod
     def get_score_matrix(input_path=None):
-        """Returns a SeqMat (Score Matrix) that can be 
+        """Returns a SeqMat (Score Matrix) that can be
         passed to biopython functions.
 
         If the input_path is not provided, then BLOSUM62
         scoring matrix will be returned instead.
 
         Parameters:
-        input_path (str): Path to the csv score matrix 
+        input_path (str): Path to the csv score matrix
 
         Returns:
         SeqMat: Score Matrix
@@ -80,7 +80,7 @@ class Utils:
 
     @staticmethod
     def max_seq_length(sequences):
-        '''Returns the length of the largest sequence 
+        '''Returns the length of the largest sequence
         in a list of sequences.'''
         return len(max(sequences, key=len))
 
@@ -89,7 +89,7 @@ class Utils:
         """
         Add the required gaps to produce an initial alignment.
         Inserts gaps at random positions inside the sequence
-        such that the length of all the sequences is same (max 
+        such that the length of all the sequences is same (max
         length of the sequence).
 
         Parameters:
@@ -189,7 +189,7 @@ class Utils:
         lines_list = input_str.split("\n")
 
         # Add the gaps
-        lines_list = Utils.add_gaps(lines_list)
+        # lines_list = Utils.add_gaps(lines_list)
         return lines_list
 
     @staticmethod
@@ -198,7 +198,7 @@ class Utils:
         Modified version of the default `read` function provided
         in Bio.Align.substitution_matrices to work with csv files.
 
-        Original link: 
+        Original link:
                 https://github.com/biopython/biopython/blob/master/Bio/Align/substitution_matrices/__init__.py"""
         try:
             fp = open(handle)

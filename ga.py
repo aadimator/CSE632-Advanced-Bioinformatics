@@ -60,6 +60,7 @@ class GA_MSA:
             for j in range(i, seq_len):
                 seq1 = sequences[i]
                 seq2 = sequences[j]
+                # TODO change signature
                 pair_align = align.globalds(seq1, seq2,
                                             Utils.get_score_matrix(),
                                             gop, gep)[0]
@@ -136,7 +137,7 @@ class GA_MSA:
         return dist
 
     def apply_crossover(self, population):
-        """Apply crossover on the population. Selects parents from 
+        """Apply crossover on the population. Selects parents from
         probabilty distrbution, based on their fitnees score, and perform
         horizontal, vertical or neither recombination by a certain probability."""
         new_population = list()
@@ -170,15 +171,15 @@ class GA_MSA:
         return Population(new_population)
 
     def _horizontal_recombination(self, p1, p2):
-        """Apply horizontal recombination, i.e. build an offspring by 
+        """Apply horizontal recombination, i.e. build an offspring by
         randomly selecting each sequence from one of the parents."""
         return [random.choice([i, j]) for i, j in zip(p1, p2)]
 
     # TODO: implement single point crossover, from Vertical decomposition with Genetic Algorithm for Multiple Sequence Alignment paper
     def _vertical_recombination(self, p1, p2):
-        """Apply vertical recombination, i.e. randomly define a cut point 
-        in the sequence and build the offspring by copying the sequence 
-        from position 1 up to the cut point from one parent and from the 
+        """Apply vertical recombination, i.e. randomly define a cut point
+        in the sequence and build the offspring by copying the sequence
+        from position 1 up to the cut point from one parent and from the
         cut point to the end of the sequence from the other parent.
 
         Keep track of the gaps before split point to maintain the integrity
