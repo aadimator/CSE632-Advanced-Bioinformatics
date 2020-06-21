@@ -6,7 +6,7 @@ def findOccurrences(s, ch):
     return [i for i, letter in enumerate(s) if letter == ch]
 
 
-def create_dotplot(seq1, seq2):
+def create_dotplot(seq1, seq2, dot_size):
 
     # remove whitespace
     seq1 = seq1.replace(" ", "")
@@ -46,7 +46,7 @@ def create_dotplot(seq1, seq2):
         ))
 
     fig.update_traces(mode='markers', marker=dict(
-        line_width=1, symbol='circle', size=8))
+        line_width=1, symbol='circle', size=dot_size))
 
     fig.update_layout(
         title="Sequence Similarity",
@@ -80,11 +80,45 @@ def create_dotplot(seq1, seq2):
 seq1 = "This is a short text No Copy"
 seq2 = "This is a long text Copy Not Please"
 
+# seq1 = """MALDGIRMPDGCYADGTWELSVHVTDLNRDVTLRVTGEVHIGGVMLKLVEKLDVKKDWSD
+# HALWWEKKRTWLLKTHWTLDKYGIQADAKLQFTPQHKLLRLQLPNMKYVKVKVNFSDRVF
+# KAVSDICKTFNIRHPEELSLLKKPRDPTKKKKKKLDDQSEDEALELEGPLITPGSGSIYS
+# SPGLYSKTMTPTYDAHDGSPLSPTSAWFGDSALSEGNPGILAVSQPITSPEILAKMFKPQ
+# ALLDKAKINQGWLDSSRSLMEQDVKENEALLLRFKYYSFFDLNPKYDAIRINQLYEQAKW
+# AILLEEIECTEEEMMMFAALQYHINKLSIMTSENHLNNSDKEVDEVDAALSDLEITLEGG
+# KTSTILGDITSIPELADYIKVFKPKKLTLKGYKQYWCTFKDTSISCYKSKEESSGTPAHQ
+# MNLRGCEVTPDVNISGQKFNIKLLIPVAEGMNEIWLRCDNEKQYAHWMAACRLASKGKTM
+# ADSSYNLEVQNILSFLKMQHLNPDPQLIPEQITTDITPECLVSPRYLKKYKNKQPGYIRD
+# LITARILEAHQNVAQMSLIEAKMRFIQAWQSLPEFGITHFIARFQGGKKEELIGIAYNRL
+# IRMDASTGDAIKTWRFSNMKQWNVNWEIKMVTVEFADEVRLSFICTEVDCKVVHEFIGGY
+# IFLSTRAKDQNESLDEEMFYKLTSGWV"""
+
+# seq2 = """MAGMKTASGDYIDSSWELRVFVGEEDPEAESVTLRVTGESHIGGVLLKIVEQINRKQDWS
+# DHAIWWEQKRQWLLQTHWTLDKYGILADARLFFGPQHRPVILRLPNRRALRLRASFSQPL
+# FQAVAAICRLLSIRHPEELSLLRAPEKKEKKKKEKEPEEELYDLSKVVLAGGVAPALFRG
+# MPAHFSDSAQTEACYHMLSRPQPPPDPLLLQRLPRPSSLSDKTQLHSRWLDSSRCLMQQG
+# IKAGDALWLRFKYYSFFDLDPKTDPVRLTQLYEQARWDLLLEEIDCTEEEMMVFAALQYH
+# INKLSQSGEVGEPAGTDPGLDDLDVALSNLEVKLEGSAPTDVLDSLTTIPELKDHLRIFR
+# PRKLTLKGYRQHWVVFKETTLSYYKSQDEAPGDPIQQLNLKGCEVVPDVNVSGQKFCIKL
+# LVPSPEGMSEIYLRCQDEQQYARWMAGCRLASKGRTMADSSYTSEVQAILAFLSLQRTGS
+# GGPGNHPHGPDASAEGLNPYGLVAPRFQRKFKAKQLTPRILEAHQNVAQLSLAEAQLRFI
+# QAWQSLPDFGISYVMVRFKGSRKDEILGIANNRLIRIDLAVGDVVKTWRFSNMRQWNVNW
+# DIRQVAIEFDEHINVAFSCVSASCRIVHEYIGGYIFLSTRERARGEELDEDLFLQLTGGH
+# EAF"""
+
+# seq1 = """CCACCTGTCTGGTCAGGCTTGCTCCAGAACTCTGCATAGATAGACAGTTGCAGACAGGAAGGGATTCTCCCTGGCCCCGGGTATCAGTGACGAATTTACCTAAGAGGCAGAGAAAAAGGC"""
+
+# seq2 = """ACTCGGAGCGAGAGCAAGACCTAGCAGGCTGGGCTGGACGTGCCCCCACCTGCCCGCCGCGCTAGCCTGCGCCGCCAAGCTGTGGCCCCGGGACTCGGACCGTGCTTGGGTGCTGGGAGG"""
+
+seq1 = """To be or not to be that is the question whether tis nobler in the mind to suffer the slings and arrows of outrageous fortune"""
+seq2 = """In one of the Bards best thought of tragedies our insistent hero Hamlet queries on two fronts about how life turns rotten"""
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "-i", "--input", help="input your sequences", action="store_true")
-parser.add_argument("-f", "--first", help="first sequence")
-parser.add_argument("-s", "--second", help="second sequence")
+parser.add_argument("-s1", "--first", help="first sequence")
+parser.add_argument("-s2", "--second", help="second sequence")
+parser.add_argument("-d", "--dot_size", type=int, help="dot size", default=8)
 args = parser.parse_args()
 if args.input:
     if not args.first or not args.second:
@@ -93,4 +127,4 @@ if args.input:
         seq1 = args.first
         seq2 = args.second
 
-create_dotplot(seq1, seq2)
+create_dotplot(seq1, seq2, dot_size=args.dot_size)
