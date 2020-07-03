@@ -106,12 +106,12 @@ seq2 = "This is a long text Copy Not Please"
 # DIRQVAIEFDEHINVAFSCVSASCRIVHEYIGGYIFLSTRERARGEELDEDLFLQLTGGH
 # EAF"""
 
-# seq1 = """CCACCTGTCTGGTCAGGCTTGCTCCAGAACTCTGCATAGATAGACAGTTGCAGACAGGAAGGGATTCTCCCTGGCCCCGGGTATCAGTGACGAATTTACCTAAGAGGCAGAGAAAAAGGC"""
+seq1 = """CCACCTGTCTGGTCAGGCTTGCTCCAGAACTCTGCATAGATAGACAGTTGCAGACAGGAAGGGATTCTCCCTGGCCCCGGGTATCAGTGACGAATTTACCTAAGAGGCAGAGAAAAAGGC"""
 
-# seq2 = """ACTCGGAGCGAGAGCAAGACCTAGCAGGCTGGGCTGGACGTGCCCCCACCTGCCCGCCGCGCTAGCCTGCGCCGCCAAGCTGTGGCCCCGGGACTCGGACCGTGCTTGGGTGCTGGGAGG"""
+seq2 = """ACTCGGAGCGAGAGCAAGACCTAGCAGGCTGGGCTGGACGTGCCCCCACCTGCCCGCCGCGCTAGCCTGCGCCGCCAAGCTGTGGCCCCGGGACTCGGACCGTGCTTGGGTGCTGGGAGG"""
 
-seq1 = """To be or not to be that is the question whether tis nobler in the mind to suffer the slings and arrows of outrageous fortune"""
-seq2 = """In one of the Bards best thought of tragedies our insistent hero Hamlet queries on two fronts about how life turns rotten"""
+# seq1 = """To be or not to be that is the question whether tis nobler in the mind to suffer the slings and arrows of outrageous fortune"""
+# seq2 = """In one of the Bards best thought of tragedies our insistent hero Hamlet queries on two fronts about how life turns rotten"""
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
