@@ -143,7 +143,9 @@ class GA_MSA:
         new_population = list()
         prob_dist = self.get_probability_distribution(population)
         sampler = VoseAlias(prob_dist)
-        for _ in range(len(population.organisms)):
+        for _ in range(int(len(population.organisms)/2)):
+            new_population.append(population.organisms[sampler.sample_n(1)[0]])
+        for _ in range(int(len(population.organisms)/2)):
             index_1, index_2 = sampler.sample_n(2)
             p1 = population.organisms[index_1].alignments
             p2 = population.organisms[index_2].alignments
@@ -280,12 +282,14 @@ class GA_MSA:
         population = self.init_pop(sequences)
 
         # Repeat for all generations or until a good solution appears
-        best_val = 0
+        best_val = float("-inf")
         best_organism = None
         counter = 0
         print()
 
         for g in range(self.generations):
+            print("Generation " + str(g))
+            print()
             counter += 1
 
             for i in range(self.population_size):
@@ -312,6 +316,7 @@ class GA_MSA:
                 counter = 0
 
             if (g > self.min_generations and counter > self.termination_generations):
+                print(counter)
                 break
 
             population = self.apply_crossover(population)
@@ -320,7 +325,7 @@ class GA_MSA:
         # Best solution
         print("\nBest solution:")
         Utils.print_sequences(best_organism.alignments)
-        return best_val
+        return best_val, best_organism.alignments
 
 
 @dataclass
