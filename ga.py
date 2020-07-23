@@ -17,7 +17,8 @@ class GA_MSA:
 
     def __init__(self, population_size=10, generations=100, termination_generations=50,
                  min_generations=50, mutation_rate=0.05, gap_open_score=-0.5,
-                 gap_extend_score=-0.1, use_affine_gap_penalty=True, score_matrix_path=None):
+                 gap_extend_score=-0.1, use_affine_gap_penalty=True,
+                 score_matrix_path=None, debug=False):
         """Class initialization.
 
         Keyword arguments:
@@ -40,6 +41,7 @@ class GA_MSA:
         self.gap_extend_score = gap_extend_score
         self.use_affine_gap_penalty = use_affine_gap_penalty
         self.score_matrix_path = score_matrix_path
+        self.debug = debug
 
     @staticmethod
     def compute_pairwise_alignments(sequences):
@@ -60,12 +62,17 @@ class GA_MSA:
             for j in range(i, seq_len):
                 seq1 = sequences[i]
                 seq2 = sequences[j]
-                # TODO change signature
-                pair_align = align.globalds(seq1, seq2,
-                                            Utils.get_score_matrix(),
-                                            gop, gep)[0]
-                alignments[i][j] = pair_align[0]
-                alignments[j][i] = pair_align[1]
+
+                if seq1 and seq2:
+                    # TODO change signature
+                    pair_align = align.globalds(seq1, seq2,
+                                                Utils.get_score_matrix(),
+                                                gop, gep)[0]
+                    alignments[i][j] = pair_align[0]
+                    alignments[j][i] = pair_align[1]
+                else:
+                    alignments[i][j] = seq1
+                    alignments[j][i] = seq2
         return alignments
 
     def init_pop(self, sequences):
@@ -86,8 +93,8 @@ class GA_MSA:
             # alignments = Utils.add_gaps(alignments)
             # alignments = Utils.remove_useless_gaps(alignment)
             population.append(Organism(alignments))
-            print("\nPopulation " + str(i + 1) + ":")
-            Utils.print_sequences(alignments)
+            self.debug and print("\nPopulation " + str(i + 1) + ":")
+            self.debug and Utils.print_sequences(alignments)
         return Population(population)
 
     def score_pairwise(self, seq1, seq2, matrix, gap=True):
@@ -225,13 +232,14 @@ class GA_MSA:
                     max_gap_block_size = round(Utils.max_seq_length(
                         population.organisms[org_index].alignments) * 0.20)
                     gaps = "-" * random.randint(1, max_gap_block_size)
-                    print("Gap Open Mutation")
-                    print(alignment)
-                    print(pos)
-                    print(max_gap_block_size)
-                    print(gaps)
+                    if self.debug:
+                        print("Gap Open Mutation")
+                        print(alignment)
+                        print(pos)
+                        print(max_gap_block_size)
+                        print(gaps)
                     alignment = alignment[:pos] + gaps + alignment[pos:]
-                    print(alignment)
+                    self.debug and print(alignment)
                     population.organisms[org_index].alignments[align_index] = alignment
 
                 elif operation == mutation_operators[1]:
@@ -240,10 +248,10 @@ class GA_MSA:
                         population.organisms[org_index].alignments)
 
                     alignment = population.organisms[org_index].alignments[align_index]
-                    print("Gap Extend Mutation")
-                    print(alignment)
+                    self.debug and print("Gap Extend Mutation")
+                    self.debug and print(alignment)
                     alignment = alignment[:start] + "-" + alignment[start:]
-                    print(alignment)
+                    self.debug and print(alignment)
                     population.organisms[org_index].alignments[align_index] = alignment
 
                 elif operation == mutation_operators[2]:
@@ -252,10 +260,10 @@ class GA_MSA:
                         population.organisms[org_index].alignments)
 
                     alignment = population.organisms[org_index].alignments[align_index]
-                    print("Gap Reduce Mutation")
-                    print(alignment)
+                    self.debug and print("Gap Reduce Mutation")
+                    self.debug and print(alignment)
                     alignment = alignment[:start] + alignment[start + 1:]
-                    print(alignment)
+                    self.debug and print(alignment)
                     population.organisms[org_index].alignments[align_index] = alignment
 
         return population
@@ -274,22 +282,25 @@ class GA_MSA:
         if input_path:
             sequences = Utils.prepare_input(input_path)
 
+        if Utils.max_seq_length(Utils.add_gaps(sequences)) == 1:
+            return 0, Utils.add_gaps(sequences)
+
         # Prints the original sequence
-        print("Input matrix:")
-        Utils.print_sequences(sequences)
+        self.debug and print("Input matrix:")
+        self.debug and Utils.print_sequences(sequences)
 
         # Create the initial population
+        print("Initializing Population")
         population = self.init_pop(sequences)
 
         # Repeat for all generations or until a good solution appears
         best_val = float("-inf")
         best_organism = None
         counter = 0
-        print()
+        print("Running GA")
 
         for g in range(self.generations):
-            print("Generation " + str(g))
-            print()
+            self.debug and print("Generation " + str(g) + "\n")
             counter += 1
 
             for i in range(self.population_size):
@@ -303,20 +314,21 @@ class GA_MSA:
                 population.organisms[i].fitness = score
                 population.fitness += score
 
-            Utils.print_population(population)
+            self.debug and Utils.print_population(population)
+            self.debug and print("Population fitness: " + str(population.fitness))
 
             max_index = max(enumerate(population.organisms),
                             key=lambda org: org[1].fitness)[0]
-            print(max_index)
+            self.debug and print(max_index)
             max_fitness = population.organisms[max_index].fitness
-            print(max_fitness)
+            self.debug and print(max_fitness)
             if (best_val < max_fitness):
                 best_val = max_fitness
                 best_organism = population.organisms[max_index]
                 counter = 0
 
             if (g > self.min_generations and counter > self.termination_generations):
-                print(counter)
+                self.debug and print(counter)
                 break
 
             population = self.apply_crossover(population)
