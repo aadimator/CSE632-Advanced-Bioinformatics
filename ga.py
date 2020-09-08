@@ -75,7 +75,7 @@ class GA_MSA:
                     alignments[j][i] = seq2
         return alignments
 
-    def init_pop(self, sequences):
+    def init_pop(self, sequences, debug = False):
         """Create an initial population. First, computes pairwise alignments of all the sequences
         and then generated `self.population_size` alignments by randomly selecting each sequence
         alignment. 
@@ -91,8 +91,8 @@ class GA_MSA:
                     pairwise_alignments[j, random.randint(0, len(sequences) - 1)])
 
             population.append(Organism(alignments))
-            self.debug and print("\nPopulation " + str(i + 1) + ":")
-            self.debug and Utils.print_sequences(alignments)
+            debug and print("\nPopulation " + str(i + 1) + ":")
+            debug and Utils.print_sequences(alignments)
         return Population(population)
 
     def score_pairwise(self, seq1, seq2, matrix, gap=True):
@@ -216,58 +216,110 @@ class GA_MSA:
         return True
 
     # Apply a mutation on child
-    def mutate(self, population):
+    def mutate(self, population, mutation_iter = 10, debug = False):
         mutation_operators = ["gap_open",
                               "gap_extension", "gap_reduction", "none"]
         for org_index in range(len(population.organisms)):
             if round(random.uniform(0, 1), 2) < self.mutation_rate:
-                alignments_len = len(
-                    population.organisms[org_index].alignments)
-                operation = random.choice(mutation_operators)
-                if operation == mutation_operators[0]:
-                    # Open gap; a position in the sequence is randomly selected,
-                    # and a block of gaps of variable size is inserted into the sequence.
+                mutations = []
+                scores = []
+                debug_strs = []
+                selected_organism = population.organisms[org_index]
+                 # in case of new crossover-ed organisms, calculate their fitness for later use
+                if selected_organism.fitness == 0:
+                    selected_organism.fitness = self.calculate_fitness(selected_organism.alignments)
 
-                    align_index = random.randint(0, alignments_len - 1)
-                    alignment = population.organisms[org_index].alignments[align_index]
-                    pos = random.randint(0, len(alignment) - 1)
-                    # 20% of the sequence length
-                    max_gap_block_size = round(Utils.max_seq_length(
-                        population.organisms[org_index].alignments) * 0.20)
-                    gaps = "-" * random.randint(1, max_gap_block_size)
-                    if self.debug:
-                        print("Gap Open Mutation")
-                        print(alignment)
-                        print(pos)
-                        print(max_gap_block_size)
-                        print(gaps)
-                    alignment = alignment[:pos] + gaps + alignment[pos:]
-                    self.debug and print(alignment)
-                    population.organisms[org_index].alignments[align_index] = alignment
+                for _ in range(mutation_iter):
+                    organism = selected_organism
+                    operation = random.choice(mutation_operators)
+                    debug_str = ''
+                    if operation == mutation_operators[0]:
+                        # Open gap; a position in the sequence is randomly selected,
+                        # and a block of gaps of variable size is inserted into the sequence.
+                        alignments_len = len(organism.alignments)
+                        align_index = random.randint(0, alignments_len - 1)
+                        alignment = organism.alignments[align_index]
+                        pos = random.randint(0, len(alignment) - 1)
+                        # 20% of the sequence length
+                        max_gap_block_size = round(Utils.max_seq_length(
+                            organism.alignments) * 0.20)
+                        gaps = "-" * random.randint(1, max_gap_block_size)
+                        
+                        debug_str += "\nGap Open Mutation"
+                        debug_str += "\nGap Open Position: " + str(pos)
+                        debug_str += "\nMax Gap Block Size: " + str(max_gap_block_size)
+                        debug_str += "\nGaps to be inserted: " + gaps
+                        debug_str += "\nOriginal alignment: " + str(alignment)
+                        debug_str += "\nOriginal Score: " + str(organism.fitness)
 
-                elif operation == mutation_operators[1]:
-                    # extend gap
-                    align_index, start, _ = Utils.get_gap_block(
-                        population.organisms[org_index].alignments)
+                        alignment = alignment[:pos] + gaps + alignment[pos:]
+                        organism.alignments[align_index] = alignment
+                        organism.alignments = Utils.remove_useless_gaps(Utils.add_gaps(organism.alignments))
+                        score = self.calculate_fitness(organism.alignments)
+                        mutations.append(organism.alignments)
+                        scores.append(score)
 
-                    alignment = population.organisms[org_index].alignments[align_index]
-                    self.debug and print("Gap Extend Mutation")
-                    self.debug and print(alignment)
-                    alignment = alignment[:start] + "-" + alignment[start:]
-                    self.debug and print(alignment)
-                    population.organisms[org_index].alignments[align_index] = alignment
+                        debug_str += "\nAfter Mutation: " + str(alignment)
+                        debug_str += "\nScore: " + str(score)
 
-                elif operation == mutation_operators[2]:
-                    # reduce gap
-                    align_index, start, _ = Utils.get_gap_block(
-                        population.organisms[org_index].alignments)
+                        debug_strs.append(debug_str)
 
-                    alignment = population.organisms[org_index].alignments[align_index]
-                    self.debug and print("Gap Reduce Mutation")
-                    self.debug and print(alignment)
-                    alignment = alignment[:start] + alignment[start + 1:]
-                    self.debug and print(alignment)
-                    population.organisms[org_index].alignments[align_index] = alignment
+                    elif operation == mutation_operators[1]:
+                        # extend gap
+                        align_index, start, _ = Utils.get_gap_block(
+                            population.organisms[org_index].alignments)
+
+                        alignment = population.organisms[org_index].alignments[align_index]
+
+                        debug_str += "\nGap Extend Mutation"
+                        debug_str += "\nOriginal alignment: " + str(alignment)
+                        debug_str += "\nOriginal Score: " + str(organism.fitness)
+                        
+                        alignment = alignment[:start] + "-" + alignment[start:]
+                        organism.alignments[align_index] = alignment
+                        organism.alignments = Utils.remove_useless_gaps(Utils.add_gaps(organism.alignments))
+                        score = self.calculate_fitness(organism.alignments)
+                        mutations.append(organism.alignments)
+                        scores.append(score)
+
+                        debug_str += "\nAfter Mutation: " + str(alignment)
+                        debug_str += "\nScore: " + str(score)
+                        
+                        debug_strs.append(debug_str)
+
+                    elif operation == mutation_operators[2]:
+                        # reduce gap
+                        align_index, start, _ = Utils.get_gap_block(
+                            organism.alignments)
+
+                        alignment = organism.alignments[align_index]
+                        
+                        debug_str += "\nGap Reduce Mutation"
+                        debug_str += "\nOriginal alignment: " + str(alignment)
+                        debug_str += "\nOriginal Score: " + str(organism.fitness)
+
+                        alignment = alignment[:start] + alignment[start + 1:]
+                        organism.alignments[align_index] = alignment
+                        organism.alignments = Utils.remove_useless_gaps(Utils.add_gaps(organism.alignments))
+                        score = self.calculate_fitness(organism.alignments)
+                        mutations.append(organism.alignments)
+                        scores.append(score)
+
+                        debug_str += "\nAfter Mutation: " + str(alignment)
+                        debug_str += "\nScore: " + str(score)
+
+                        debug_strs.append(debug_str)
+                    else: # no mutation
+                        mutations.append(organism.alignments)
+                        scores.append(organism.fitness)
+                        debug_str += "\nNo Mutation"
+                        debug_str += "\nOriginal alignments: " + str(organism.alignments)
+                        debug_str += "\nScore: " + str(organism.fitness)
+                        debug_strs.append(debug_str)
+                
+                best_idx = np.argmax(scores)
+                population.organisms[org_index].alignments = mutations[best_idx]
+                debug and print(debug_strs[best_idx])
 
         return population
 
@@ -303,7 +355,7 @@ class GA_MSA:
         print("Running GA")
 
         for g in range(self.generations):
-            self.debug and print("Generation " + str(g) + "\n")
+            self.debug and print("\n\nGeneration " + str(g + 1) + "\n")
             counter += 1
 
             for i in range(self.population_size):
@@ -317,27 +369,28 @@ class GA_MSA:
                 population.organisms[i].fitness = score
                 population.fitness += score
 
-            self.debug and Utils.print_population(population)
+            # self.debug and Utils.print_population(population)
             self.debug and print("Population fitness: " + str(population.fitness))
 
             max_index = max(enumerate(population.organisms),
                             key=lambda org: org[1].fitness)[0]
-            self.debug and print(max_index)
+            # self.debug and print(max_index)
             max_fitness = population.organisms[max_index].fitness
-            self.debug and print(max_fitness)
+            self.debug and print("Max Fitness: " + str(max_fitness))
+            self.debug and print("Best Fitness: " + str(best_val))
 
-            # TODO: I think this should be greater than.
             if (best_val < max_fitness):
                 best_val = max_fitness
                 best_organism = population.organisms[max_index]
                 counter = 0
+                print("Updated Best Value")
 
             if (g > self.min_generations and counter > self.termination_generations):
                 self.debug and print(counter)
                 break
 
             population = self.apply_crossover(population)
-            population = self.mutate(population)
+            population = self.mutate(population, debug=self.debug)
 
         # Best solution
         print("\nBest solution:")
