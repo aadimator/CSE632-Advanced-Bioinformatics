@@ -187,9 +187,7 @@ class Utils:
         # Get lines
         input_str = input_str.replace(" ", "")
         lines_list = input_str.split("\n")
-
-        # Add the gaps
-        # lines_list = Utils.add_gaps(lines_list)
+        
         return lines_list
 
     @staticmethod

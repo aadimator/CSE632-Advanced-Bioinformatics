@@ -78,7 +78,7 @@ class GA_MSA:
     def init_pop(self, sequences):
         """Create an initial population. First, computes pairwise alignments of all the sequences
         and then generated `self.population_size` alignments by randomly selecting each sequence
-        alignment. After that, adds gaps to the generated organism so they all have same size.
+        alignment. 
 
         Keyword arguments:
         sequences -- list of strings"""
@@ -90,8 +90,6 @@ class GA_MSA:
                 alignments.append(
                     pairwise_alignments[j, random.randint(0, len(sequences) - 1)])
 
-            # alignments = Utils.add_gaps(alignments)
-            # alignments = Utils.remove_useless_gaps(alignment)
             population.append(Organism(alignments))
             self.debug and print("\nPopulation " + str(i + 1) + ":")
             self.debug and Utils.print_sequences(alignments)
@@ -111,7 +109,7 @@ class GA_MSA:
 
     def calculate_fitness(self, alignment):
         """Calculate the fitness score of a particular alignment. The objective
-        function used is the sum-of-pairs.
+        function used is the sum of pairwise alignments.
 
         Keyword arguments:
         alignment -- list of alignments"""
@@ -127,6 +125,8 @@ class GA_MSA:
 
         return round(sum_score, 2)
 
+    # TODO: Should I update it so parents with lower fitness score have
+    # higher probability of being selected.
     def get_probability_distribution(self, population):
         """Get probability distribution of organisms from the population based on
         their fitness scores.
@@ -152,6 +152,8 @@ class GA_MSA:
         sampler = VoseAlias(prob_dist)
         for _ in range(int(len(population.organisms)/2)):
             new_population.append(population.organisms[sampler.sample_n(1)[0]])
+
+
         for _ in range(int(len(population.organisms)/2)):
             index_1, index_2 = sampler.sample_n(2)
             p1 = population.organisms[index_1].alignments
@@ -166,7 +168,7 @@ class GA_MSA:
 
             prob = round(random.uniform(0, 1), 2)
             h_prob = 0.3
-            v_prob = 0.5
+            v_prob = 0.5 # TODO: make it 50% instead of 20%
             if prob <= h_prob:
                 # print("Horizontal")
                 child = self._horizontal_recombination(p1, p2)
@@ -197,6 +199,7 @@ class GA_MSA:
         split_point = random.randint(1, min(len(p1[0]), len(p2[0])) - 1)
         if (not GA_MSA.valid_split_point(p1, p2, split_point)):
             return random.choice([p1, p2])
+        
         p1_half = [alignment[:split_point] for alignment in p1]
         p2_half = [alignment[split_point:] for alignment in p2]
         return [i+j for i, j in zip(p1_half, p2_half)]
@@ -322,6 +325,8 @@ class GA_MSA:
             self.debug and print(max_index)
             max_fitness = population.organisms[max_index].fitness
             self.debug and print(max_fitness)
+
+            # TODO: I think this should be greater than.
             if (best_val < max_fitness):
                 best_val = max_fitness
                 best_organism = population.organisms[max_index]
@@ -350,3 +355,4 @@ class Organism:
 class Population:
     organisms: list
     fitness: float = 0
+
